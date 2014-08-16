@@ -32,4 +32,5 @@ def index(request, report_name_url):
         pass
 
     # Go render the response and return it to the client.
-    return render(request, "report_view/index.html", {'report_table': report_table, 'report_name': 'report_name'})
+    return render(request, "report_view/index.html", {'report_table': report_table, 'report_name': report_name,
+                                                      'reports': Report.objects.all()})
