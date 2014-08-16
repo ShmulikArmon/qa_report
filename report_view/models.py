@@ -1,9 +1,19 @@
 from django.db import models
 
 
+class Report(models.Model):
+    name = models.CharField(max_length=64)
+    jira_jql = models.CharField(max_length=300)
+    testrail_plan_id = models.IntegerField()
+
+    def __unicode__(self):
+        return self.name
+
+
+
 class Testrail(models.Model):
-    plan_id = models.IntegerField(help_text="The number at the end on the main URL")
-    link = models.URLField()
+    report = models.ManyToOneRel('Report', 'testrail_plan_id')
+    link = models.URLField(max_length=30)
 
 
     def __unicode__(self):
@@ -11,14 +21,10 @@ class Testrail(models.Model):
 
 
 class Jira(models.Model):
-    service = models.CharField(max_length=30)
-    component_id = models.CharField(max_length=20)
-    tag_id = models.CharField(max_length=20)
-    epic_link = models.CharField(max_length=20)
-    jql = models.CharField(max_length=200)
+    report = models.OneToOneField('Report')
 
     def __unicode__(self):
-        return self.component_id
+        return self.report.name
 
 
 class Bug(models.Model):

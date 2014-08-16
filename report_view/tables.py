@@ -1,7 +1,5 @@
 from django_tables2 import tables
 from report_view.models import Bug
-from django.shortcuts import render
-from report_view.models import Bug
 
 class Report_Table(tables.Table):
     bug_id = tables.columns.TemplateColumn('<a href="https://tabtale.atlassian.net/browse/{{ record.bug_id }}">{{ record.bug_id }}</a>')
@@ -14,5 +12,4 @@ class Report_Table(tables.Table):
     class Meta:
         model = Bug
         attrs = {'class': 'table'}
-        exclude = ('id',)
-        # www.attrs = {'a' : "http://facebook.com"}
+        exclude = ('id', 'jira_connect',)
