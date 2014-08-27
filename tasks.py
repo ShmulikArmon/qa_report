@@ -1,5 +1,5 @@
 from celery import Celery
-from populatedb import populate_call
+from populatedb import populate_existing_reports
 from celery.utils.log import get_task_logger
 from django.core.cache import cache
 
@@ -17,7 +17,7 @@ def test():
 
 @app.task
 def populate_db():
-    populate_call()
+    populate_existing_reports()
 
 @app.task
 def locked_populate():
@@ -29,6 +29,6 @@ def locked_populate():
 
     if acquire_lock():
         try:
-            populate_call()
+            populate_existing_reports()
         finally:
             release_lock()

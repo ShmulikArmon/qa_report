@@ -136,7 +136,10 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'report_view',
     'django_tables2',
-    'kombu.transport.django'
+    'kombu.transport.django',
+    'crispy_forms',
+    'chartit',
+    'django_nvd3',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -169,3 +172,5 @@ LOGGING = {
         },
     }
 }
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

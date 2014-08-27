@@ -1,3 +1,11 @@
 .bug_id {
     color:red;
 }
+
+text.nv-legend-text {
+    fill:white;
+}
+
+g.nv-label {
+    visibility: hidden;
+}

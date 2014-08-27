@@ -2,13 +2,17 @@
 
 {% load static %}
 {% load render_table from django_tables2 %}
+{% load nvd3_tags %}
 <html>
 <head lang="en">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
-    <link href="{% static 'css/custom_css.css' %}" rel="stylesheet" media="screen">
-    <link href="{% static 'css/simple-sidebar.css' %}" rel="stylesheet" media="screen">
+    <link href="{% static '../static/css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
+    <link href="{% static '../static/css/custom_css.css' %}" rel="stylesheet" media="screen">
+    <link href="{% static '../static/css/simple-sidebar.css' %}" rel="stylesheet" media="screen">
+    <script src="{% static '../static/js/d3.min.js' %}"></script>
+    <script src="{% static '../static/js/nv.d3.min.js' %}"></script>
+    {% load_chart charttype chartdata chartcontainer extra %}
     <link rel="icon" type="image/png" href="/static/favicon.ico" />
     <title>Qa Report</title>
 </head>
@@ -23,10 +27,16 @@
                 {% for report in reports %}
                 <li><a href="/report_view/{{ report.name.split|join:'_' }}"> {{ report.name|title }} </a></li>
                 {% endfor %}
+                <li><button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button></li>
             </ul>
     </div>
     <div id="page-content-wrapper">
             <div class="container-fluid">
+                <div class="row" id="chart-container">
+                    {% include_container "piechart_container" 440 600 %}
+                </div>
                 <div class="row">
                     {% render_table report_table %}
                 </div>
@@ -34,7 +44,23 @@
     </div>
 </div>
 
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Cancel</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create New Report</h4>
+      </div>
+      <div class="modal-body">
+        {% load crispy_forms_tags %}
+        {% crispy report_form report_form.helper %}
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="http://code.jquery.com/jquery.js"></script>
-<script src="js/bootstrap.min.js"></script>
+<script src="../../static/js/bootstrap.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Report(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
     jira_jql = models.CharField(max_length=300)
     testrail_plan_id = models.IntegerField()
 
@@ -10,14 +10,16 @@ class Report(models.Model):
         return self.name
 
 
-
 class Testrail(models.Model):
-    report = models.ManyToOneRel('Report', 'testrail_plan_id')
-    link = models.URLField(max_length=30)
-
+    report = models.OneToOneField('Report')
+    tc_untested = models.CharField(max_length=10)
+    tc_passed = models.CharField(max_length=10)
+    tc_failed = models.CharField(max_length=10)
+    tc_retest = models.CharField(max_length=10)
+    tc_NA = models.CharField(max_length=10)
 
     def __unicode__(self):
-        return self.plan_id
+        return self.report.name
 
 
 class Jira(models.Model):
@@ -35,7 +37,6 @@ class Bug(models.Model):
     status = models.CharField(max_length=20)
     fix_version = models.CharField(max_length=20)
     assignee = models.CharField(max_length=20)
-
 
     def __unicode__(self):
         return self.bug_id
