@@ -1,23 +1,11 @@
 
-import urllib2, urllib, os
-from jira.client import JIRA
-from jira import exceptions
-import testrail, json
+import os
+from misc import create_json_file
+from testrail_handler import get_plan
+from jira_handler import generate_list
+from django.core import exceptions as django_exceptions
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'qa_report_2.settings')
-from report_view.models import Jira, Bug, Report, Testrail
-
-jira = JIRA(options={'server': 'https://tabtale.atlassian.net'}, basic_auth=('shmulika', 'cECxWccn16'))
-tr_client = testrail.APIClient('https://tabtale.testrail.com/')
-tr_client.user = 'shmulika@tabtale.com'
-tr_client.password = 'QWEqwe00'
-
-def URLRequest(url, params, method="GET"):
-    if method == "POST":
-        return urllib2.Request(url, data=urllib.urlencode(params))
-    else:
-        return urllib2.Request(url + "?" + urllib.urlencode(params))
-
 
 def create_report(name, jql, testrail):
     r = Report.objects.get_or_create(name=name, jira_jql=jql, testrail_plan_id=testrail)[0]
@@ -42,17 +30,27 @@ def create_testrail(report, tc_u, tc_p, tc_f, tc_r, tc_n):
 
 
 def populate_testrail(report):
-    get_plan_api = 'get_plan'
-    plan_id = (str(report.testrail_plan_id))
-    tr_request = '/'.join([get_plan_api,plan_id])
-    data = tr_client.send_get(tr_request)
+    data = get_plan(report.testrail_plan_id)
+    create_json_file('tr_test.json', data)
     create_testrail(report, data["untested_count"], data["passed_count"], data["failed_count"],
                     data["retest_count"], data["custom_status1_count"])
 
 
+def populate_bugs(jira_list, jira_connector):
+    for item in jira_list:
+        id = item.key
+        des = item.fields.summary
+        pr = item.fields.priority.name
+        st = item.fields.status.name
+        fv = ""
+        if len(item.fields.fixVersions) != 0:
+            fv = item.fields.fixVersions[0]
+        ass = item.fields.assignee.displayName
+        create_bug(jira_connector, id, des, pr, st, fv, ass)
+
 
 def populate():
-    create_report("Publishing", 'component="PSDK Server"', 6342)
+    create_report("Publishing Server", 'component="PSDK Server"', 6342)
     populate_existing_reports()
 
 
@@ -62,26 +60,15 @@ def populate_existing_reports():
         jql = report.jira_jql
         jir = create_jira_connector(report)
         try:
-            jira_list = jira.search_issues(jql)
-            i = 0
-            for item in jira_list:
-                id = jira_list[i].key
-                des = jira_list[i].fields.summary
-                pr = jira_list[i].fields.priority.name
-                st = jira_list[i].fields.status.name
-                fv = ""
-                if len(jira_list[i].fields.fixVersions) != 0:
-                    fv = jira_list[i].fields.fixVersions[0]
-                ass = jira_list[i].fields.assignee.displayName
-                create_bug(jir, id, des, pr, st, fv, ass)
-                i += 1
-        except exceptions.JIRAError as r:
-            print "something went wrong with the jira search: "
-            print exceptions.get_error_list(r)
+            jira_list = generate_list(jql)
+            populate_bugs(jira_list,jir)
+        except django_exceptions as e:
+            print "something went wrong with the jira population: "
+            print e
         try:
             populate_testrail(report)
-        except testrail.APIError as e:
-            print "something went wrong with testrail"
+        except django_exceptions as e:
+            print "something went wrong with testrail population: "
             print e
 
 
@@ -93,5 +80,5 @@ def populate_call():
 if __name__ == '__main__':
     print "Starting Population of DB..."
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'qa_report_2.settings')
-    from report_view.models import Jira, Bug, Report
+    from report_view.models import Jira, Bug, Report, Testrail
     populate()

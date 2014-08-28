@@ -1,3 +1,4 @@
+import io, json
 
 def remove_entries(entries, dic):
     for key in entries:
@@ -45,3 +46,8 @@ def replace_to_human_names(list):
             replace_at_index(list,item,"Failed")
         if item == 'tc_NA':
             replace_at_index(list,item,"Not Available")
+
+
+def create_json_file(fn, data):
+        with io.open(fn, 'w', encoding='utf-8') as f:
+            f.write(unicode(json.dumps(data, indent = 2, separators=(',', ': '), ensure_ascii=False)))
